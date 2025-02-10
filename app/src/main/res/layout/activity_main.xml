@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="64dp">
+
+    <TextView
+        android:id="@+id/usernameTitleTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="UserName: "
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/usernameFieldTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginStart="16dp"
+        android:text="Hello World!"
+        app:layout_constraintBottom_toBottomOf="@id/usernameTitleTextView"
+        app:layout_constraintStart_toEndOf="@id/usernameTitleTextView"
+        app:layout_constraintTop_toTopOf="@id/usernameTitleTextView" />
+
+    <Button
+        android:id="@+id/usernameChangeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="change username"
+        app:layout_constraintStart_toStartOf="@id/usernameTitleTextView"
+        app:layout_constraintTop_toBottomOf="@id/usernameFieldTextView" />
+</androidx.constraintlayout.widget.ConstraintLayout>
