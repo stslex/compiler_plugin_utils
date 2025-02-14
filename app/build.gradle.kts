@@ -28,11 +28,23 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring(libs.android.desugarJdkLibs)
+    implementation(project(":compiler-plugin-lib"))
+    kotlinCompilerPluginClasspath(project(":compiler-plugin-lib"))
 
+    coreLibraryDesugaring(libs.android.desugarJdkLibs)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.lifecycle.viewModel)
     implementation(libs.androidx.lifecycle.runtime)
     implementation(libs.androidx.lifecycle.common)
     implementation(libs.androidx.constraintlayout)
+}
+
+tasks.named("build") {
+    dependsOn("pluginJar")
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions {
+        freeCompilerArgs += listOf("-Xplugin=${rootProject.projectDir}/compiler-plugin-lib/build/libs/compiler-plugin-lib.jar")
+    }
 }
