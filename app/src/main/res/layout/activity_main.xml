@@ -33,4 +33,33 @@
         android:text="change username"
         app:layout_constraintStart_toStartOf="@id/usernameTitleTextView"
         app:layout_constraintTop_toBottomOf="@id/usernameFieldTextView" />
+
+    <TextView
+        android:id="@+id/secondNameTitleTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="32dp"
+        android:text="SecondName: "
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/usernameChangeButton" />
+
+    <TextView
+        android:id="@+id/secondNameFieldTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginStart="16dp"
+        android:text="Hello World!"
+        app:layout_constraintBottom_toBottomOf="@id/secondNameTitleTextView"
+        app:layout_constraintStart_toEndOf="@id/secondNameTitleTextView"
+        app:layout_constraintTop_toTopOf="@id/secondNameTitleTextView" />
+
+    <Button
+        android:id="@+id/secondNameChangeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="change secondName"
+        app:layout_constraintStart_toStartOf="@id/secondNameTitleTextView"
+        app:layout_constraintTop_toBottomOf="@id/secondNameFieldTextView" />
 </androidx.constraintlayout.widget.ConstraintLayout>
