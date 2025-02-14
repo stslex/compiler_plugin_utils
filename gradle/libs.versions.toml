@@ -11,14 +11,11 @@ versionCode = "21"
 
 lifecycle = "2.8.7"
 activity = "1.10.0"
-coroutines = "1.9.0"
-ktx = "1.15.0"
 constraintLayout = "2.2.0"
 jetbrainsKotlinJvm = "2.0.20"
 
 [libraries]
 android-desugarJdkLibs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "androidDesugarJdkLibs" }
-android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "androidGradlePlugin" }
 
 androidx-activity = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity" }
 androidx-lifecycle-viewModel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
@@ -27,7 +24,6 @@ androidx-lifecycle-common = { group = "androidx.lifecycle", name = "lifecycle-co
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintLayout" }
 
 jetbrains-kotlin-compiler-embeddable = { group = "org.jetbrains.kotlin", name = "kotlin-compiler-embeddable", version.ref = "kotlin" }
-jetbrains-kotlin-compiler-plugin-api = { group = "org.jetbrains.kotlin", name = "kotlin-compiler-plugin-api", version.ref = "kotlin" }
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

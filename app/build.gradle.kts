@@ -39,10 +39,6 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
 }
 
-tasks.named("build") {
-    dependsOn("pluginJar")
-}
-
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     kotlinOptions {
         freeCompilerArgs += listOf("-Xplugin=${rootProject.projectDir}/compiler-plugin-lib/build/libs/compiler-plugin-lib.jar")
