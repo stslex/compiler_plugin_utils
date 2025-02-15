@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "compiler-plugin-lib"
+rootProject.name = "compiler-plugin"

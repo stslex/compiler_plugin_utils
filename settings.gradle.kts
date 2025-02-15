@@ -21,5 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "CompilerPlugin"
 
-include(":compiler-plugin-lib")
+include(":compiler-plugin")
 include(":app")

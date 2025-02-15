@@ -1,6 +1,6 @@
-package com.stslex.compiler_plugin_lib
+package io.github.stslex.compiler_plugin
 
-import com.stslex.compiler_plugin_lib.extensions.DistinctChangeIrGenerationExtension
+import io.github.stslex.compiler_plugin.extensions.DistinctChangeIrGenerationExtension
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
 import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi

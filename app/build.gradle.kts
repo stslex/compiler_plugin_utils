@@ -28,8 +28,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":compiler-plugin-lib"))
-    kotlinCompilerPluginClasspath(project(":compiler-plugin-lib"))
+    implementation(project(":compiler-plugin"))
+    "kotlinCompilerPluginClasspath"(project(":compiler-plugin"))
 
     coreLibraryDesugaring(libs.android.desugarJdkLibs)
     implementation(libs.androidx.activity)

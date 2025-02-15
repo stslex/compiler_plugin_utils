@@ -1,6 +1,6 @@
-package com.stslex.compiler_plugin_lib.extensions
+package io.github.stslex.compiler_plugin.extensions
 
-import com.stslex.compiler_plugin_lib.transformers.IrFunctionTransformer
+import io.github.stslex.compiler_plugin.transformers.IrFunctionTransformer
 import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.declarations.IrModuleFragment
