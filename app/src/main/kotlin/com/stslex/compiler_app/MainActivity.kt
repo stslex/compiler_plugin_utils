@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import com.stslex.compiler_app.UserToastUtil.sendToastOfUserChanges
 import com.stslex.compiler_app.app.R
 import com.stslex.compiler_app.model.UserModel
+import com.stslex.compiler_plugin_lib.DistinctUntilChangeFun
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import java.util.logging.Level
@@ -52,11 +53,13 @@ class MainActivity : ComponentActivity() {
         setSecondName(user.secondName)
     }
 
+    @DistinctUntilChangeFun
     private fun setName(name: String) {
         logger.log(Level.INFO, "setName: $name")
         findViewById<TextView>(R.id.usernameFieldTextView).text = name
     }
 
+    @DistinctUntilChangeFun
     private fun setSecondName(name: String) {
         logger.log(Level.INFO, "setSecondName: $name")
         findViewById<TextView>(R.id.secondNameFieldTextView).text = name

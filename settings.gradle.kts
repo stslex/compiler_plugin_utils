@@ -3,6 +3,9 @@ pluginManagement {
         gradlePluginPortal()
         google()
         mavenCentral()
+        flatDir {
+            dirs("../compiler-plugin-lib/build/libs")
+        }
     }
 }
 
@@ -15,6 +18,8 @@ dependencyResolutionManagement {
     }
 }
 
+
 rootProject.name = "CompilerPlugin"
 
+include(":compiler-plugin-lib")
 include(":app")
