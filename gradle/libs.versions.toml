@@ -14,6 +14,8 @@ activity = "1.10.0"
 constraintLayout = "2.2.0"
 jetbrainsKotlinJvm = "2.0.20"
 
+stslexCompilerPlugin = "0.0.1"
+
 [libraries]
 android-desugarJdkLibs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "androidDesugarJdkLibs" }
 
@@ -25,6 +27,7 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 
 jetbrains-kotlin-compiler-embeddable = { group = "org.jetbrains.kotlin", name = "kotlin-compiler-embeddable", version.ref = "kotlin" }
 
+stslex-compilerPlugin = { group = "io.github.stslex", name = "compiler-plugin", version.ref = "stslexCompilerPlugin" }
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

@@ -9,7 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import com.stslex.compiler_app.UserToastUtil.sendToastOfUserChanges
 import com.stslex.compiler_app.app.R
 import com.stslex.compiler_app.model.UserModel
-import com.stslex.compiler_plugin_lib.DistinctUntilChangeFun
+import io.github.stslex.compiler_plugin.DistinctUntilChangeFun
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import java.util.logging.Level
