@@ -1,6 +1,6 @@
-package com.stslex.compiler_plugin_lib.utils
+package io.github.stslex.compiler_plugin.utils
 
-import com.stslex.compiler_plugin_lib.DistinctChangeCache
+import io.github.stslex.compiler_plugin.DistinctChangeCache
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.ir.builders.declarations.buildFun
