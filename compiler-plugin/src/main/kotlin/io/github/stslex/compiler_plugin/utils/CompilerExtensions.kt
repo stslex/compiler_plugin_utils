@@ -3,25 +3,37 @@ package io.github.stslex.compiler_plugin.utils
 import io.github.stslex.compiler_plugin.DistinctChangeCache
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
+import org.jetbrains.kotlin.backend.jvm.ir.fileParentOrNull
+import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.ir.builders.declarations.buildFun
 import org.jetbrains.kotlin.ir.declarations.IrClass
+import org.jetbrains.kotlin.ir.declarations.IrConstructor
 import org.jetbrains.kotlin.ir.declarations.IrDeclaration
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrPackageFragment
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
+import org.jetbrains.kotlin.ir.declarations.createExpressionBody
 import org.jetbrains.kotlin.ir.expressions.IrBody
 import org.jetbrains.kotlin.ir.expressions.IrExpression
 import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin
 import org.jetbrains.kotlin.ir.expressions.impl.IrCallImpl
+import org.jetbrains.kotlin.ir.expressions.impl.IrConstructorCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrFunctionExpressionImpl
+import org.jetbrains.kotlin.ir.expressions.impl.IrGetFieldImpl
+import org.jetbrains.kotlin.ir.expressions.impl.IrGetValueImpl
+import org.jetbrains.kotlin.ir.symbols.UnsafeDuringIrConstructionAPI
+import org.jetbrains.kotlin.ir.symbols.impl.IrFieldSymbolImpl
+import org.jetbrains.kotlin.ir.types.defaultType
 import org.jetbrains.kotlin.ir.types.typeWith
 import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
+import org.jetbrains.kotlin.ir.util.defaultType
 import org.jetbrains.kotlin.ir.util.dump
+import org.jetbrains.kotlin.ir.util.file
 import org.jetbrains.kotlin.ir.util.kotlinFqName
+import org.jetbrains.kotlin.ir.util.parentClassOrNull
 import org.jetbrains.kotlin.ir.util.patchDeclarationParents
-import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
@@ -88,39 +100,117 @@ internal val IrFunction.fullyQualifiedName: String
 /**
  * Create call for [DistinctChangeCache.invoke]
  */
+@OptIn(UnsafeDuringIrConstructionAPI::class)
 internal fun IrPluginContext.buildSaveInCacheCall(
     keyLiteral: IrExpression,
     argsListExpr: IrExpression,
     lambdaExpr: IrExpression,
     function: IrSimpleFunction,
-    qualifierArgs: IrExpression,
-    logger: CompileLogger
+    logger: CompileLogger,
+    backingField: IrFieldSymbolImpl
 ): IrExpression {
-    logger.i("buildSaveInCacheCall for ${function.name}, args: ${argsListExpr.dump()} with config: ${qualifierArgs.dump()}")
+    logger.i("buildSaveInCacheCall for ${function.name}, args: ${argsListExpr.dump()}")
 
-    val memoizeFunction = referenceFunctions(
-        CallableId(
-            classId = DistinctChangeCache::class.toClassId(),
-            callableName = Name.identifier("invoke")
-        )
+    val distinctChangeClassSymbol = referenceClass(DistinctChangeCache::class.toClassId())
+        ?: error("Cannot find DistinctChangeCache")
+
+    val invokeFunSymbol = distinctChangeClassSymbol.owner.declarations
+        .filterIsInstance<IrSimpleFunction>()
+        .firstOrNull { it.name == Name.identifier("invoke") }
+        ?: error("Cannot find DistinctChangeCache.invoke")
+
+    val getDistCacheField = IrGetFieldImpl(
+        startOffset = function.startOffset,
+        endOffset = function.endOffset,
+        symbol = backingField,
+        type = distinctChangeClassSymbol.owner.defaultType,
+        receiver = function.dispatchReceiverParameter?.let { thisReceiver ->
+            IrGetValueImpl(
+                startOffset = function.startOffset,
+                endOffset = function.endOffset,
+                symbol = thisReceiver.symbol,
+                type = thisReceiver.type
+            )
+        },
+        origin = null
     )
-        .singleOrNull()
-        ?: error("Cannot find function DistinctChangeCache.memorize")
 
     return IrCallImpl(
         startOffset = function.startOffset,
         endOffset = function.endOffset,
         type = function.returnType,
-        symbol = memoizeFunction,
+        symbol = invokeFunSymbol.symbol,
         typeArgumentsCount = 1,
-        valueArgumentsCount = 4
+        valueArgumentsCount = 3,
+        origin = null
     )
-        .also { call -> call.patchDeclarationParents(function) }
+        .also { it.patchDeclarationParents(function.parent) }
         .apply {
+            dispatchReceiver = getDistCacheField
+
             putTypeArgument(0, function.returnType)
             putValueArgument(0, keyLiteral)
             putValueArgument(1, argsListExpr)
             putValueArgument(2, lambdaExpr)
-            putValueArgument(3, qualifierArgs)
         }
+}
+
+@OptIn(UnsafeDuringIrConstructionAPI::class)
+internal fun IrPluginContext.generateFields(
+    function: IrSimpleFunction,
+    qualifierArgs: IrExpression,
+    logger: CompileLogger
+): IrFieldSymbolImpl {
+    logger.i("generateFields for ${function.name} parent: ${function.file}")
+
+    val parentClass = function.parentClassOrNull
+    val parentFile = function.fileParentOrNull
+
+    val errorNotFound =
+        "function ${function.name} in ${function.file} couldn't be used with @DistinctUntilChangeFun"
+
+    if (parentClass == null && parentFile == null) error(errorNotFound)
+
+
+    val startOffset = parentClass?.startOffset ?: parentFile?.startOffset ?: error(errorNotFound)
+    val endOffset = parentClass?.endOffset ?: parentFile?.endOffset ?: error(errorNotFound)
+
+    val fieldSymbol = IrFieldSymbolImpl()
+
+    val distinctChangeClass = referenceClass(DistinctChangeCache::class.toClassId())
+        ?: error("couldn't find DistinctChangeCache")
+
+    val backingField = irFactory.createField(
+        startOffset = startOffset,
+        endOffset = endOffset,
+        origin = IrDeclarationOrigin.PROPERTY_BACKING_FIELD,
+        symbol = fieldSymbol,
+        name = Name.identifier("_distinctCache"),
+        type = distinctChangeClass.defaultType,
+        visibility = DescriptorVisibilities.PRIVATE,
+        isFinal = true,
+        isExternal = false,
+        isStatic = parentClass == null,
+    )
+
+    val constructorSymbol = distinctChangeClass.owner.declarations
+        .filterIsInstance<IrConstructor>()
+        .firstOrNull { it.isPrimary }
+        ?: error("Cannot find primary constructor of DistinctChangeCache")
+
+    val callDistInit = IrConstructorCallImpl.fromSymbolOwner(
+        startOffset = startOffset,
+        endOffset = endOffset,
+        type = distinctChangeClass.defaultType,
+        constructorSymbol = constructorSymbol.symbol
+    )
+        .apply {
+            putValueArgument(0, qualifierArgs)
+        }
+
+    backingField.parent = function.parent
+    backingField.initializer = irFactory.createExpressionBody(callDistInit)
+    (function.parentClassOrNull ?: function.fileParentOrNull)?.declarations?.add(backingField)
+
+    return fieldSymbol
 }
