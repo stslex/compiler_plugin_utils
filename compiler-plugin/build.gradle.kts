@@ -86,14 +86,22 @@ val localRepoPath = File(
 
 tasks.named("publishToMavenLocal") {
     finalizedBy(generateChecksums)
-    finalizedBy(packageArtifacts)
+
+    doLast {
+        println("✅ publishToMavenLocal Success")
+    }
 }
 
-val generateChecksums = tasks.register("generateChecksums") {
+val generateChecksums by tasks.register("generateChecksums") {
+    mustRunAfter("publishToMavenLocal")
+    finalizedBy("packageArtifacts")
+
     group = "publishing"
     description = "Generate MD5 и SHA1 for all artifacts in local repository"
 
     doLast {
+        println("🔍 Generating checksums...")
+
         if (!localRepoPath.exists()) {
             error("❌ Local repository not found: $localRepoPath")
         }
@@ -118,11 +126,18 @@ val generateChecksums = tasks.register("generateChecksums") {
     }
 }
 
-val packageArtifacts = tasks.registering(Zip::class) {
+tasks.register<Zip>("packageArtifacts") {
+    mustRunAfter("generateChecksums")
+    dependsOn("generateChecksums")
+
     group = "publishing"
     description = "Create ZIP-archive with artifacts for Central Publisher Portal"
 
+
     val localRepo = file(localRepoPath)
+    from(localRepo)
+
+    println("📦 Package artifacts...")
 
     if (localRepo.exists().not()) error("Local repo not found: $localRepo")
 
@@ -135,6 +150,7 @@ val packageArtifacts = tasks.registering(Zip::class) {
 
     archiveFileName.set("compiler-plugin-${version}.zip")
     destinationDirectory.set(layout.buildDirectory.dir("distributions"))
+    println("✅ Artifacts are packaged: ${archiveFile.get().asFile}")
 }
 
 fun File.md5Hex(): String = inputStream().use { stream ->
