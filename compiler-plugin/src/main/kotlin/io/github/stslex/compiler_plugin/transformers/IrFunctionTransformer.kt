@@ -1,10 +1,10 @@
-package com.stslex.compiler_plugin_lib.transformers
+package io.github.stslex.compiler_plugin.transformers
 
 import buildArgsListExpression
-import com.stslex.compiler_plugin_lib.DistinctUntilChangeFun
-import com.stslex.compiler_plugin_lib.utils.buildLambdaForBody
-import com.stslex.compiler_plugin_lib.utils.buildSaveInCacheCall
-import com.stslex.compiler_plugin_lib.utils.fullyQualifiedName
+import io.github.stslex.compiler_plugin.DistinctUntilChangeFun
+import io.github.stslex.compiler_plugin.utils.buildLambdaForBody
+import io.github.stslex.compiler_plugin.utils.buildSaveInCacheCall
+import io.github.stslex.compiler_plugin.utils.fullyQualifiedName
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.ir.IrStatement

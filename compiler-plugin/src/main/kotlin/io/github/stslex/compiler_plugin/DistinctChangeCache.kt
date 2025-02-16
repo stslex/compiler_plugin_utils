@@ -1,4 +1,4 @@
-package com.stslex.compiler_plugin_lib
+package io.github.stslex.compiler_plugin
 
 import java.util.logging.Level
 import java.util.logging.Logger

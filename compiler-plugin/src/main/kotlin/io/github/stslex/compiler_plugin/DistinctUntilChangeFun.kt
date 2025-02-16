@@ -1,4 +1,4 @@
-package com.stslex.compiler_plugin_lib
+package io.github.stslex.compiler_plugin
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.BINARY)

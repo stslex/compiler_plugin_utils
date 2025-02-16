@@ -1,11 +1,12 @@
 pluginManagement {
+    includeBuild("compiler-plugin")
     repositories {
         gradlePluginPortal()
         google()
         mavenCentral()
-        flatDir {
-            dirs("../compiler-plugin-lib/build/libs")
-        }
+
+        // for getting plugin from local maven repository
+        // mavenLocal()
     }
 }
 
@@ -21,5 +22,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "CompilerPlugin"
 
-include(":compiler-plugin-lib")
 include(":app")

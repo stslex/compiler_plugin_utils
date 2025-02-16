@@ -28,8 +28,8 @@ android {
 }
 
 dependencies {
-    implementation(project(":compiler-plugin-lib"))
-    kotlinCompilerPluginClasspath(project(":compiler-plugin-lib"))
+    implementation(libs.stslex.compilerPlugin)
+    kotlinCompilerPluginClasspath(libs.stslex.compilerPlugin)
 
     coreLibraryDesugaring(libs.android.desugarJdkLibs)
     implementation(libs.androidx.activity)
@@ -37,10 +37,4 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime)
     implementation(libs.androidx.lifecycle.common)
     implementation(libs.androidx.constraintlayout)
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions {
-        freeCompilerArgs += listOf("-Xplugin=${rootProject.projectDir}/compiler-plugin-lib/build/libs/compiler-plugin-lib.jar")
-    }
 }
