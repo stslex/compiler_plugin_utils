@@ -53,13 +53,13 @@ class MainActivity : ComponentActivity() {
         setSecondName(user.secondName)
     }
 
-    @DistinctUntilChangeFun
+    @DistinctUntilChangeFun(false)
     private fun setName(name: String) {
         logger.log(Level.INFO, "setName: $name")
         findViewById<TextView>(R.id.usernameFieldTextView).text = name
     }
 
-    @DistinctUntilChangeFun
+    @DistinctUntilChangeFun(true)
     private fun setSecondName(name: String) {
         logger.log(Level.INFO, "setSecondName: $name")
         findViewById<TextView>(R.id.secondNameFieldTextView).text = name

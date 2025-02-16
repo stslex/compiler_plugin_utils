@@ -12,6 +12,6 @@ internal class WorkshopCompilerPlugin(
 ) : CompilerPluginRegistrar() {
 
     override fun ExtensionStorage.registerExtensions(configuration: CompilerConfiguration) {
-        IrGenerationExtension.registerExtension(DistinctChangeIrGenerationExtension())
+        IrGenerationExtension.registerExtension(DistinctChangeIrGenerationExtension(configuration))
     }
 }

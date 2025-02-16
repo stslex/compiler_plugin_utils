@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "io.github.stslex"
-version = "0.0.1"
+version = libs.versions.stslexCompilerPlugin.get()
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
@@ -43,7 +43,7 @@ publishing {
 
             groupId = "io.github.stslex"
             artifactId = "compiler-plugin"
-            version = "0.0.1"
+            version = libs.versions.stslexCompilerPlugin.get()
 
             artifact(tasks["javadocJar"])
             artifact(tasks["sourcesJar"])
@@ -94,7 +94,6 @@ tasks.named("publishToMavenLocal") {
 
 val generateChecksums by tasks.register("generateChecksums") {
     mustRunAfter("publishToMavenLocal")
-    finalizedBy("packageArtifacts")
 
     group = "publishing"
     description = "Generate MD5 и SHA1 for all artifacts in local repository"
@@ -127,15 +126,10 @@ val generateChecksums by tasks.register("generateChecksums") {
 }
 
 tasks.register<Zip>("packageArtifacts") {
-    mustRunAfter("generateChecksums")
-    dependsOn("generateChecksums")
-
     group = "publishing"
     description = "Create ZIP-archive with artifacts for Central Publisher Portal"
 
-
     val localRepo = file(localRepoPath)
-    from(localRepo)
 
     println("📦 Package artifacts...")
 

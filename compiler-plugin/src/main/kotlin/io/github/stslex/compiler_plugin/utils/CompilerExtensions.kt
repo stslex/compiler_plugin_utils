@@ -2,9 +2,11 @@ package io.github.stslex.compiler_plugin.utils
 
 import io.github.stslex.compiler_plugin.DistinctChangeCache
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
+import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.ir.builders.declarations.buildFun
 import org.jetbrains.kotlin.ir.declarations.IrClass
+import org.jetbrains.kotlin.ir.declarations.IrDeclaration
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrFunction
 import org.jetbrains.kotlin.ir.declarations.IrPackageFragment
@@ -16,13 +18,26 @@ import org.jetbrains.kotlin.ir.expressions.impl.IrCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrFunctionExpressionImpl
 import org.jetbrains.kotlin.ir.types.typeWith
 import org.jetbrains.kotlin.ir.util.deepCopyWithSymbols
+import org.jetbrains.kotlin.ir.util.dump
 import org.jetbrains.kotlin.ir.util.kotlinFqName
 import org.jetbrains.kotlin.ir.util.patchDeclarationParents
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
+import kotlin.reflect.KClass
 
+internal fun IrPluginContext.createIrBuilder(
+    declaration: IrDeclaration
+): DeclarationIrBuilder = DeclarationIrBuilder(
+    generatorContext = this,
+    symbol = declaration.symbol
+)
+
+internal inline fun <reified T : Any> KClass<T>.toClassId(): ClassId = ClassId(
+    FqName(java.`package`.name),
+    Name.identifier(java.simpleName)
+)
 
 internal fun IrPluginContext.buildLambdaForBody(
     originalBody: IrBody,
@@ -78,13 +93,14 @@ internal fun IrPluginContext.buildSaveInCacheCall(
     argsListExpr: IrExpression,
     lambdaExpr: IrExpression,
     function: IrSimpleFunction,
+    qualifierArgs: IrExpression,
+    logger: CompileLogger
 ): IrExpression {
-    val cacheNameClass = checkNotNull(DistinctChangeCache::class.simpleName) {
-        "Cannot get simpleName"
-    }
+    logger.i("buildSaveInCacheCall for ${function.name}, args: ${argsListExpr.dump()} with config: ${qualifierArgs.dump()}")
+
     val memoizeFunction = referenceFunctions(
         CallableId(
-            classId = ClassId(FqName(CompilerConsts.PATH), Name.identifier(cacheNameClass)),
+            classId = DistinctChangeCache::class.toClassId(),
             callableName = Name.identifier("invoke")
         )
     )
@@ -97,7 +113,7 @@ internal fun IrPluginContext.buildSaveInCacheCall(
         type = function.returnType,
         symbol = memoizeFunction,
         typeArgumentsCount = 1,
-        valueArgumentsCount = 3
+        valueArgumentsCount = 4
     )
         .also { call -> call.patchDeclarationParents(function) }
         .apply {
@@ -105,5 +121,6 @@ internal fun IrPluginContext.buildSaveInCacheCall(
             putValueArgument(0, keyLiteral)
             putValueArgument(1, argsListExpr)
             putValueArgument(2, lambdaExpr)
+            putValueArgument(3, qualifierArgs)
         }
 }
