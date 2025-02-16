@@ -28,6 +28,10 @@ android {
 }
 
 dependencies {
+//    todo: for debug
+//    implementation(project(":compiler-plugin"))
+//    kotlinCompilerPluginClasspath(project(":compiler-plugin"))
+
     implementation(libs.stslex.compilerPlugin)
     kotlinCompilerPluginClasspath(libs.stslex.compilerPlugin)
 

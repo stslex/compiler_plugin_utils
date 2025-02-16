@@ -1,35 +1,33 @@
 package io.github.stslex.compiler_plugin.transformers
 
 import buildArgsListExpression
-import io.github.stslex.compiler_plugin.DistinctUntilChangeFun
+import io.github.stslex.compiler_plugin.utils.CompileLogger.Companion.toCompilerLogger
 import io.github.stslex.compiler_plugin.utils.buildLambdaForBody
 import io.github.stslex.compiler_plugin.utils.buildSaveInCacheCall
 import io.github.stslex.compiler_plugin.utils.fullyQualifiedName
+import io.github.stslex.compiler_plugin.utils.readQualifier
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
+import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.createExpressionBody
 import org.jetbrains.kotlin.ir.expressions.impl.IrConstImpl
-import org.jetbrains.kotlin.ir.util.hasAnnotation
-import org.jetbrains.kotlin.name.FqName
 
 internal class IrFunctionTransformer(
-    private val pluginContext: IrPluginContext
+    private val pluginContext: IrPluginContext,
+    private val messageCollector: MessageCollector
 ) : IrElementTransformerVoidWithContext() {
 
-    private val IrSimpleFunction.isAnnotationValid: Boolean
-        get() = DistinctUntilChangeFun::class.qualifiedName
-            ?.let { qualifier -> hasAnnotation(FqName(qualifier)) }
-            ?: false
+    private val logger by lazy { messageCollector.toCompilerLogger() }
 
     override fun visitSimpleFunction(declaration: IrSimpleFunction): IrStatement {
-        if (declaration.isAnnotationValid.not()) {
-            return super.visitSimpleFunction(declaration)
-        }
+        val qualifierArgs = pluginContext.readQualifier(declaration, logger)
+            ?: return super.visitSimpleFunction(declaration)
+
         val originalBody = declaration.body ?: return super.visitSimpleFunction(declaration)
 
-
+        logger.i("fullyQualifiedName: ${declaration.fullyQualifiedName}")
         val keyLiteral = IrConstImpl.string(
             startOffset = declaration.startOffset,
             endOffset = declaration.endOffset,
@@ -44,11 +42,14 @@ internal class IrFunctionTransformer(
             argsListExpr = argsListExpr,
             lambdaExpr = lambdaExpr,
             function = declaration,
+            qualifierArgs = qualifierArgs,
+            logger = logger
         )
 
         declaration.body = pluginContext.irFactory.createExpressionBody(memoizeCall)
 
         return super.visitSimpleFunction(declaration)
     }
+
 }
 

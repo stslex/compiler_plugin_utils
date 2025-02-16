@@ -6,7 +6,7 @@ pluginManagement {
         mavenCentral()
 
         // for getting plugin from local maven repository
-        // mavenLocal()
+        mavenLocal()
     }
 }
 
@@ -16,6 +16,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        mavenLocal()
     }
 }
 
@@ -23,3 +24,5 @@ dependencyResolutionManagement {
 rootProject.name = "CompilerPlugin"
 
 include(":app")
+// for debug
+//include(":compiler-plugin")
