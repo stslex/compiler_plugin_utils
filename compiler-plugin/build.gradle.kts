@@ -129,9 +129,7 @@ tasks.register<Zip>("packageArtifacts") {
     group = "publishing"
     description = "Create ZIP-archive with artifacts for Central Publisher Portal"
 
-
     val localRepo = file(localRepoPath)
-    from(localRepo)
 
     println("📦 Package artifacts...")
 
