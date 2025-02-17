@@ -2,21 +2,44 @@
 
 > Check annotated functions arguments. If they don't change - return last result.
 > Functions could be logged.
+> Support extra custom action on function processing
 
-import compiler plugin: 
+import compiler plugin:
+
 ```kotlin
 dependencies {
-    implementation("io.github.stslex:compiler-plugin:0.0.1")
-    kotlinCompilerPluginClasspath("io.github.stslex:compiler-plugin:0.0.1")
+    implementation("io.github.stslex:compiler-plugin:$version")
+    kotlinCompilerPluginClasspath("io.github.stslex:compiler-plugin:$version")
 }
 ```
 
-in code: 
+in code (all annotation properties are optional):
+
 ```kotlin
+
 import io.github.stslex.compiler_plugin.DistinctUntilChangeFun
 
-@DistinctUntilChangeFun
-fun setUserName(username: String){
-  // function logic
+@DistinctUntilChangeFun(
+    logging = true,
+    singletonAllow = false,
+    name = "set_user_second_name",
+    action = TestLogger::class
+)
+fun setUserName(username: String) {
+    // function logic
+}
+```
+
+for custom actions:
+
+```kotlin
+class TestLogger : Action {
+
+    override fun invoke(
+        name: String,
+        isProcess: Boolean
+    ) {
+        println("test action $name procession: $isProcess")
+    }
 }
 ```
