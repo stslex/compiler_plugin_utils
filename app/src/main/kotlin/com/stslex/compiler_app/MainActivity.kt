@@ -61,7 +61,11 @@ class MainActivity : ComponentActivity() {
         findViewById<TextView>(R.id.usernameFieldTextView).text = name
     }
 
-    @DistinctUntilChangeFun(true, action = TestLogger::class)
+    @DistinctUntilChangeFun(
+        name = "set_user_second_name",
+        logging = true,
+        action = TestLogger::class
+    )
     private fun setSecondName(name: String) {
         logger.log(Level.INFO, "setSecondName: $name")
         findViewById<TextView>(R.id.secondNameFieldTextView).text = name

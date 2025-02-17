@@ -4,7 +4,10 @@ import io.github.stslex.compiler_plugin.utils.Action
 
 class TestLogger : Action {
 
-    override fun invoke(isProcess: Boolean) {
-        println("test logger procession: $isProcess")
+    override fun invoke(
+        name: String,
+        isProcess: Boolean
+    ) {
+        println("test action $name procession: $isProcess")
     }
 }

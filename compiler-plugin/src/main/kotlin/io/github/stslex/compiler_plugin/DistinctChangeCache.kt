@@ -18,22 +18,24 @@ internal class DistinctChangeCache(
     ): R {
         val entry = cache[key]
 
+        // log enter to invoke processing
         if (config.logging) {
-            logger.i("key: $key, config:$config, entry: $entry, args: $args")
+            logger.i("name: ${config.name} key: $key, config:$config, entry: $entry, args: $args")
         }
 
+        config.action(
+            name = config.name,
+            isProcess = entry != null && entry.first == args
+        )
+
         if (entry != null && entry.first == args) {
-            if (config.logging) {
-                logger.i("$key not change")
-            }
-            config.action(isProcess = false)
+            if (config.logging) logger.i("${config.name} with key $key not change")
             return entry.second as R
         }
 
-        config.action(isProcess = true)
-
         val result = body()
         cache[key] = args to result
+
         return result
     }
 }

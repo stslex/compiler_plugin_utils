@@ -7,6 +7,7 @@ import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.ir.builders.irBoolean
 import org.jetbrains.kotlin.ir.builders.irCallConstructor
+import org.jetbrains.kotlin.ir.builders.irString
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.expressions.IrClassReference
 import org.jetbrains.kotlin.ir.expressions.IrConst
@@ -36,7 +37,10 @@ internal fun IrPluginContext.readQualifier(
 
     val irBuilder = createIrBuilder(function)
 
-    val loggingExpr = annotation.getValueArgument(0) ?: irBuilder.irBoolean(LOGGING_DEFAULT)
+    val loggingExpr = annotation.getValueArgument(0)
+        ?: irBuilder.irBoolean(LOGGING_DEFAULT)
+    val actionName = annotation.getValueArgument(2)
+        ?: irBuilder.irString(function.name.identifier)
     val actionInstanceExpr = getQualifierAction(annotation, irBuilder)
 
     val constructorSymbol = referenceClass(DistinctChangeConfig::class.classId)
@@ -53,6 +57,7 @@ internal fun IrPluginContext.readQualifier(
         .apply {
             putValueArgument(0, loggingExpr)
             putValueArgument(1, actionInstanceExpr)
+            putValueArgument(2, actionName)
         }
 }
 
@@ -65,7 +70,7 @@ private fun IrPluginContext.getQualifierAction(
         .findClass(DefaultAction::class.name, DefaultAction::class.fqName)
         ?: error("readQualifier ${DefaultAction::class.java.simpleName} not found")
 
-    val actionReference = annotation.getValueArgument(2) as? IrClassReference
+    val actionReference = annotation.getValueArgument(3) as? IrClassReference
 
     val actionClassSymbol = actionReference?.symbol as? IrClassSymbol ?: defaultActionClass
 
