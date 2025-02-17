@@ -1,5 +1,6 @@
 package io.github.stslex.compiler_plugin
 
+import io.github.stslex.compiler_plugin.model.DistinctChangeConfig
 import io.github.stslex.compiler_plugin.utils.RuntimeLogger
 
 internal class DistinctChangeCache(
@@ -25,8 +26,11 @@ internal class DistinctChangeCache(
             if (config.logging) {
                 logger.i("$key not change")
             }
+            config.action(isProcess = false)
             return entry.second as R
         }
+
+        config.action(isProcess = true)
 
         val result = body()
         cache[key] = args to result

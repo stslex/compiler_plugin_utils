@@ -34,6 +34,7 @@ import org.jetbrains.kotlin.ir.util.file
 import org.jetbrains.kotlin.ir.util.kotlinFqName
 import org.jetbrains.kotlin.ir.util.parentClassOrNull
 import org.jetbrains.kotlin.ir.util.patchDeclarationParents
+import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
@@ -46,10 +47,18 @@ internal fun IrPluginContext.createIrBuilder(
     symbol = declaration.symbol
 )
 
-internal inline fun <reified T : Any> KClass<T>.toClassId(): ClassId = ClassId(
-    FqName(java.`package`.name),
-    Name.identifier(java.simpleName)
-)
+internal val <T : Any> KClass<T>.classId: ClassId
+    get() = ClassId(fqName, name)
+
+internal val <T : Any> KClass<T>.callableId: CallableId
+    get() = CallableId(fqName, name)
+
+
+internal val <T : Any> KClass<T>.fqName: FqName
+    get() = FqName(java.`package`.name)
+
+internal val <T : Any> KClass<T>.name: Name
+    get() = Name.identifier(java.simpleName)
 
 internal fun IrPluginContext.buildLambdaForBody(
     originalBody: IrBody,
@@ -111,7 +120,7 @@ internal fun IrPluginContext.buildSaveInCacheCall(
 ): IrExpression {
     logger.i("buildSaveInCacheCall for ${function.name}, args: ${argsListExpr.dump()}")
 
-    val distinctChangeClassSymbol = referenceClass(DistinctChangeCache::class.toClassId())
+    val distinctChangeClassSymbol = referenceClass(DistinctChangeCache::class.classId)
         ?: error("Cannot find DistinctChangeCache")
 
     val invokeFunSymbol = distinctChangeClassSymbol.owner.declarations
@@ -177,7 +186,7 @@ internal fun IrPluginContext.generateFields(
 
     val fieldSymbol = IrFieldSymbolImpl()
 
-    val distinctChangeClass = referenceClass(DistinctChangeCache::class.toClassId())
+    val distinctChangeClass = referenceClass(DistinctChangeCache::class.classId)
         ?: error("couldn't find DistinctChangeCache")
 
     val backingField = irFactory.createField(

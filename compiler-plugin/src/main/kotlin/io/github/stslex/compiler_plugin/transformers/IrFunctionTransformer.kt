@@ -1,6 +1,7 @@
 package io.github.stslex.compiler_plugin.transformers
 
 import buildArgsListExpression
+import io.github.stslex.compiler_plugin.DistinctUntilChangeFun.Companion.SINGLETON_ALLOW
 import io.github.stslex.compiler_plugin.utils.CompileLogger.Companion.toCompilerLogger
 import io.github.stslex.compiler_plugin.utils.buildLambdaForBody
 import io.github.stslex.compiler_plugin.utils.buildSaveInCacheCall
@@ -29,10 +30,9 @@ internal class IrFunctionTransformer(
         val qualifierArgs = pluginContext.readQualifier(declaration, logger)
             ?: return super.visitSimpleFunction(declaration)
 
-        if (
-            declaration.getQualifierValue("singletonAllow").not() &&
-            declaration.parentClassOrNull == null
-        ) {
+        val isSingletonAllow = declaration.getQualifierValue("singletonAllow", SINGLETON_ALLOW)
+
+        if (isSingletonAllow.not() && declaration.parentClassOrNull == null) {
             error("singleton is not allowed for ${declaration.name} in ${declaration.fileParentOrNull}")
         }
 
