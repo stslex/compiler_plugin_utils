@@ -2,18 +2,18 @@ package io.github.stslex.compiler_plugin
 
 import io.github.stslex.compiler_plugin.utils.RuntimeLogger
 
-internal object DistinctChangeCache {
+internal class DistinctChangeCache(
+    private val config: DistinctChangeConfig
+) {
 
     private val cache = mutableMapOf<String, Pair<List<Any?>, Any?>>()
     private val logger = RuntimeLogger.tag("DistinctChangeLogger")
 
-    @JvmStatic
     @Suppress("UNCHECKED_CAST")
-    fun <R> invoke(
+    internal operator fun <R> invoke(
         key: String,
         args: List<Any?>,
         body: () -> R,
-        config: DistinctChangeConfig
     ): R {
         val entry = cache[key]
 
@@ -22,6 +22,9 @@ internal object DistinctChangeCache {
         }
 
         if (entry != null && entry.first == args) {
+            if (config.logging) {
+                logger.i("$key not change")
+            }
             return entry.second as R
         }
 

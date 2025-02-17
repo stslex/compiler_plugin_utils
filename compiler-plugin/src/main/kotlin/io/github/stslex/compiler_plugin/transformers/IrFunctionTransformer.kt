@@ -5,14 +5,18 @@ import io.github.stslex.compiler_plugin.utils.CompileLogger.Companion.toCompiler
 import io.github.stslex.compiler_plugin.utils.buildLambdaForBody
 import io.github.stslex.compiler_plugin.utils.buildSaveInCacheCall
 import io.github.stslex.compiler_plugin.utils.fullyQualifiedName
+import io.github.stslex.compiler_plugin.utils.generateFields
+import io.github.stslex.compiler_plugin.utils.getQualifierValue
 import io.github.stslex.compiler_plugin.utils.readQualifier
 import org.jetbrains.kotlin.backend.common.IrElementTransformerVoidWithContext
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
+import org.jetbrains.kotlin.backend.jvm.ir.fileParentOrNull
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.declarations.IrSimpleFunction
 import org.jetbrains.kotlin.ir.declarations.createExpressionBody
 import org.jetbrains.kotlin.ir.expressions.impl.IrConstImpl
+import org.jetbrains.kotlin.ir.util.parentClassOrNull
 
 internal class IrFunctionTransformer(
     private val pluginContext: IrPluginContext,
@@ -24,6 +28,13 @@ internal class IrFunctionTransformer(
     override fun visitSimpleFunction(declaration: IrSimpleFunction): IrStatement {
         val qualifierArgs = pluginContext.readQualifier(declaration, logger)
             ?: return super.visitSimpleFunction(declaration)
+
+        if (
+            declaration.getQualifierValue("singletonAllow").not() &&
+            declaration.parentClassOrNull == null
+        ) {
+            error("singleton is not allowed for ${declaration.name} in ${declaration.fileParentOrNull}")
+        }
 
         val originalBody = declaration.body ?: return super.visitSimpleFunction(declaration)
 
@@ -37,12 +48,16 @@ internal class IrFunctionTransformer(
 
         val argsListExpr = pluginContext.buildArgsListExpression(declaration)
         val lambdaExpr = pluginContext.buildLambdaForBody(originalBody, declaration)
+
+        val backingField = pluginContext.generateFields(declaration, qualifierArgs, logger)
+
+        logger.i("backingField = $backingField")
         val memoizeCall = pluginContext.buildSaveInCacheCall(
             keyLiteral = keyLiteral,
             argsListExpr = argsListExpr,
             lambdaExpr = lambdaExpr,
             function = declaration,
-            qualifierArgs = qualifierArgs,
+            backingField = backingField,
             logger = logger
         )
 
@@ -52,4 +67,3 @@ internal class IrFunctionTransformer(
     }
 
 }
-

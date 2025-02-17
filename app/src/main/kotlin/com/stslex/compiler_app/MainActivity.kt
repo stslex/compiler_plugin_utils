@@ -51,9 +51,10 @@ class MainActivity : ComponentActivity() {
         sendToastOfUserChanges(user)
         setName(user.name)
         setSecondName(user.secondName)
+        printUsernameWithSingletonDistinct(user.name)
     }
 
-    @DistinctUntilChangeFun(false)
+    @DistinctUntilChangeFun(true)
     private fun setName(name: String) {
         logger.log(Level.INFO, "setName: $name")
         findViewById<TextView>(R.id.usernameFieldTextView).text = name
@@ -64,4 +65,12 @@ class MainActivity : ComponentActivity() {
         logger.log(Level.INFO, "setSecondName: $name")
         findViewById<TextView>(R.id.secondNameFieldTextView).text = name
     }
+}
+
+@DistinctUntilChangeFun(
+    logging = true,
+    singletonAllow = true
+)
+private fun printUsernameWithSingletonDistinct(name: String) {
+    println("printUsernameWithSingletonDistinct: $name")
 }
