@@ -1,11 +1,13 @@
 package io.github.stslex.compiler_plugin.utils
 
 import io.github.stslex.compiler_plugin.DistinctChangeCache
+import io.github.stslex.compiler_plugin.GENERATED_FIELD_NAME
 import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
 import org.jetbrains.kotlin.backend.common.lower.DeclarationIrBuilder
 import org.jetbrains.kotlin.backend.jvm.ir.fileParentOrNull
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.descriptors.Modality
+import org.jetbrains.kotlin.ir.ObsoleteDescriptorBasedAPI
 import org.jetbrains.kotlin.ir.builders.declarations.buildFun
 import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrConstructor
@@ -116,7 +118,8 @@ internal fun IrPluginContext.buildSaveInCacheCall(
     lambdaExpr: IrExpression,
     function: IrSimpleFunction,
     logger: CompileLogger,
-    backingField: IrFieldSymbolImpl
+    backingField: IrFieldSymbolImpl,
+    qualifierArgs: IrExpression
 ): IrExpression {
     logger.i("buildSaveInCacheCall for ${function.name}, args: ${argsListExpr.dump()}")
 
@@ -150,7 +153,7 @@ internal fun IrPluginContext.buildSaveInCacheCall(
         type = function.returnType,
         symbol = invokeFunSymbol.symbol,
         typeArgumentsCount = 1,
-        valueArgumentsCount = 3,
+        valueArgumentsCount = 4,
         origin = null
     )
         .also { it.patchDeclarationParents(function.parent) }
@@ -160,20 +163,35 @@ internal fun IrPluginContext.buildSaveInCacheCall(
             putTypeArgument(0, function.returnType)
             putValueArgument(0, keyLiteral)
             putValueArgument(1, argsListExpr)
-            putValueArgument(2, lambdaExpr)
+            putValueArgument(2, qualifierArgs)
+            putValueArgument(3, lambdaExpr)
         }
 }
 
-@OptIn(UnsafeDuringIrConstructionAPI::class)
+@OptIn(UnsafeDuringIrConstructionAPI::class, ObsoleteDescriptorBasedAPI::class)
 internal fun IrPluginContext.generateFields(
     function: IrSimpleFunction,
-    qualifierArgs: IrExpression,
     logger: CompileLogger
 ): IrFieldSymbolImpl {
     logger.i("generateFields for ${function.name} parent: ${function.file}")
 
     val parentClass = function.parentClassOrNull
     val parentFile = function.fileParentOrNull
+
+    // check if parentClass or parentFile already contains _generatedField
+    val createdField = when {
+        parentClass != null -> parentClass.declarations.find {
+            it.descriptor.name.identifierOrNullIfSpecial == GENERATED_FIELD_NAME
+        }
+
+        parentFile != null -> parentFile.declarations.find {
+            it.descriptor.name.identifierOrNullIfSpecial == GENERATED_FIELD_NAME
+        }
+
+        else -> null
+    }?.symbol as? IrFieldSymbolImpl
+
+    if (createdField != null) return createdField
 
     val errorNotFound =
         "function ${function.name} in ${function.file} couldn't be used with @DistinctUntilChangeFun"
@@ -194,7 +212,7 @@ internal fun IrPluginContext.generateFields(
         endOffset = endOffset,
         origin = IrDeclarationOrigin.PROPERTY_BACKING_FIELD,
         symbol = fieldSymbol,
-        name = Name.identifier("_distinctCache"),
+        name = Name.identifier(GENERATED_FIELD_NAME),
         type = distinctChangeClass.defaultType,
         visibility = DescriptorVisibilities.PRIVATE,
         isFinal = true,
@@ -213,9 +231,6 @@ internal fun IrPluginContext.generateFields(
         type = distinctChangeClass.defaultType,
         constructorSymbol = constructorSymbol.symbol
     )
-        .apply {
-            putValueArgument(0, qualifierArgs)
-        }
 
     backingField.parent = function.parent
     backingField.initializer = irFactory.createExpressionBody(callDistInit)

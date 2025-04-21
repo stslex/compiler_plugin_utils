@@ -49,7 +49,7 @@ internal class IrFunctionTransformer(
         val argsListExpr = pluginContext.buildArgsListExpression(declaration)
         val lambdaExpr = pluginContext.buildLambdaForBody(originalBody, declaration)
 
-        val backingField = pluginContext.generateFields(declaration, qualifierArgs, logger)
+        val backingField = pluginContext.generateFields(declaration, logger)
 
         logger.i("backingField = $backingField")
         val memoizeCall = pluginContext.buildSaveInCacheCall(
@@ -58,7 +58,8 @@ internal class IrFunctionTransformer(
             lambdaExpr = lambdaExpr,
             function = declaration,
             backingField = backingField,
-            logger = logger
+            logger = logger,
+            qualifierArgs = qualifierArgs
         )
 
         declaration.body = pluginContext.irFactory.createExpressionBody(memoizeCall)
