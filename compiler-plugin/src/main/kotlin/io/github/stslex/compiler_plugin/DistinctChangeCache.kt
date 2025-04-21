@@ -4,20 +4,21 @@ import io.github.stslex.compiler_plugin.model.DistinctChangeConfig
 import io.github.stslex.compiler_plugin.utils.RuntimeLogger
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 
-internal class DistinctChangeCache(
-    private val config: DistinctChangeConfig
-) {
+internal const val GENERATED_FIELD_NAME = "_generatedField"
+
+internal class DistinctChangeCache {
 
     private val cache = mutableMapOf<String, Pair<List<Any?>, Any?>>()
-    private val logger = runIf(config.logging) { RuntimeLogger.tag("DistinctChangeLogger") }
 
     @Suppress("UNCHECKED_CAST")
     internal operator fun <R> invoke(
         key: String,
         args: List<Any?>,
+        config: DistinctChangeConfig,
         body: () -> R,
     ): R {
         val entry = cache[key]
+        val logger = runIf(config.logging) { RuntimeLogger.tag("DistinctChangeLogger") }
 
         logger?.i("name: ${config.name} key: $key, config:$config, entry: $entry, args: $args")
 
